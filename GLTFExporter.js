@@ -409,8 +409,12 @@ THREE.GLTFExporter.prototype = {
 			};
 
 			// pbrMetallicRoughness.baseColorFactor
-			var color = material.color.toArray().concat( [ material.opacity ] );
-
+            var color;
+            if ("color" in material) {
+			    color = material.color.toArray().concat( [ material.opacity ] );
+            } else {
+                color = [1,1,1,1];
+            }
 			if ( !equalArray( color, [ 1, 1, 1, 1 ] ) ) {
 
 				gltfMaterial.pbrMetallicRoughness.baseColorFactor = color;
@@ -448,7 +452,12 @@ THREE.GLTFExporter.prototype = {
 			} else {
 
 				// emissiveFactor
-				var emissive = material.emissive.clone().multiplyScalar( material.emissiveIntensity ).toArray();
+                var emissive;
+                if ("emissive" in material) {
+				emissive = material.emissive.clone().multiplyScalar( material.emissiveIntensity ).toArray();
+                } else {
+                    emissive = [0,0,0];
+                }
 
 				if ( !equalArray( emissive, [ 0, 0, 0 ] ) ) {
 
@@ -534,6 +543,7 @@ THREE.GLTFExporter.prototype = {
 			}
 
 			var geometry = mesh.geometry;
+            var mode;
 
 			// Use the correct mode
 			if ( mesh instanceof THREE.LineSegments ) {
@@ -869,7 +879,7 @@ THREE.GLTFExporter.prototype = {
 			input = input instanceof Array ? input : [ input ];
 
 			var objectsWithoutScene = [];
-			for ( i = 0; i < input.length; i++ ) {
+			for (var i = 0; i < input.length; i++ ) {
 
 				if ( input[ i ] instanceof THREE.Scene ) {
 
@@ -901,13 +911,13 @@ THREE.GLTFExporter.prototype = {
 		if ( outputJSON.buffers && outputJSON.buffers.length > 0 ) {
 
 			outputJSON.buffers[ 0 ].byteLength = blob.size;
-			objectURL = URL.createObjectURL( blob );
+			var objectURL = URL.createObjectURL( blob );
 
 			var reader = new window.FileReader();
 			 reader.readAsDataURL( blob );
 			 reader.onloadend = function() {
 
-				 base64data = reader.result;
+				 var base64data = reader.result;
 				 outputJSON.buffers[ 0 ].uri = base64data;
 				 onDone( outputJSON );
 
