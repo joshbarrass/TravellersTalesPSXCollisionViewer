@@ -39,7 +39,7 @@
 		<script>
             import('./GLTFExporter.js');
 function downloadJSON(objectData) {
-    let filename = "export.json";
+    let filename = "export.gltf";
     let contentType = "application/json;charset=utf-8;";
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
       var blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(objectData)))], { type: contentType });
