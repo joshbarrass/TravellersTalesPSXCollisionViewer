@@ -63,7 +63,7 @@ THREE.GLTFExporter.prototype = {
 	 * @param  {Function} onDone  Callback on completed
 	 * @param  {Object} options options
 	 */
-	parse: function ( input, onDone, options ) {
+	parse: async function ( input, onDone, options ) {
 
 		var DEFAULT_OPTIONS = {
 			binary: false,
@@ -628,7 +628,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {Boolean} flipY before writing out the image
 		 * @return {Integer}     Index of the processed texture in the "images" array
 		 */
-		function processImage( image, format, flipY ) {
+		async function processImage( image, format, flipY ) {
 
 			if ( ! cachedData.images.has( image ) ) {
 
@@ -678,7 +678,9 @@ THREE.GLTFExporter.prototype = {
 					ctx.scale( 1, - 1 );
 
 				}
-
+                var clampedData = new Uint8ClampedArray(image.data);
+                var imageData = new ImageData(clampedData, image.width, image.height);
+                image = await createImageBitmap(imageData);
 				ctx.drawImage( image, 0, 0, canvas.width, canvas.height );
 
 				if ( options.binary === true ) {
@@ -753,7 +755,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {Texture} map Map to process
 		 * @return {Integer}     Index of the processed texture in the "textures" array
 		 */
-		function processTexture( map ) {
+		async function processTexture( map ) {
 
 			if ( cachedData.textures.has( map ) ) {
 
@@ -770,7 +772,7 @@ THREE.GLTFExporter.prototype = {
 			var gltfTexture = {
 
 				sampler: processSampler( map ),
-				source: processImage( map.image, map.format, map.flipY )
+				source: await processImage( map.image, map.format, map.flipY )
 
 			};
 
@@ -788,7 +790,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {THREE.Material} material Material to process
 		 * @return {Integer}      Index of the processed material in the "materials" array
 		 */
-		function processMaterial( material ) {
+		async function processMaterial( material ) {
 
 			if ( cachedData.materials.has( material ) ) {
 
@@ -861,7 +863,7 @@ THREE.GLTFExporter.prototype = {
 
 					gltfMaterial.pbrMetallicRoughness.metallicRoughnessTexture = {
 
-						index: processTexture( material.metalnessMap )
+						index: await processTexture( material.metalnessMap )
 
 					};
 
@@ -878,7 +880,7 @@ THREE.GLTFExporter.prototype = {
 
 				gltfMaterial.pbrMetallicRoughness.baseColorTexture = {
 
-					index: processTexture( material.map )
+					index: await processTexture( material.map )
 
 				};
 
@@ -999,7 +1001,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {THREE.Mesh} mesh Mesh to process
 		 * @return {Integer}      Index of the processed mesh in the "meshes" array
 		 */
-		function processMesh( mesh ) {
+		async function processMesh( mesh ) {
 
 			var geometry = mesh.geometry;
 
@@ -1254,7 +1256,7 @@ THREE.GLTFExporter.prototype = {
 
 				}
 
-				var material = processMaterial( materials[ groups[ i ].materialIndex ] );
+				var material = await processMaterial( materials[ groups[ i ].materialIndex ] );
 
 				if ( material !== null ) {
 
@@ -1514,7 +1516,7 @@ THREE.GLTFExporter.prototype = {
 		 * @param  {THREE.Object3D} node Object3D to processNode
 		 * @return {Integer}      Index of the node in the nodes list
 		 */
-		function processNode( object ) {
+		async function processNode( object ) {
 
 			if ( object.isLight ) {
 
@@ -1581,7 +1583,7 @@ THREE.GLTFExporter.prototype = {
 
 			if ( object.isMesh || object.isLine || object.isPoints ) {
 
-				var mesh = processMesh( object );
+				var mesh = await processMesh( object );
 
 				if ( mesh !== null ) {
 
@@ -1611,7 +1613,7 @@ THREE.GLTFExporter.prototype = {
 
 					if ( child.visible || options.onlyVisible === false ) {
 
-						var node = processNode( child );
+						var node = await processNode( child );
 
 						if ( node !== null ) {
 
@@ -1645,7 +1647,7 @@ THREE.GLTFExporter.prototype = {
 		 * Process Scene
 		 * @param  {THREE.Scene} node Scene to process
 		 */
-		function processScene( scene ) {
+		async function processScene( scene ) {
 
 			if ( ! outputJSON.scenes ) {
 
@@ -1676,7 +1678,7 @@ THREE.GLTFExporter.prototype = {
 
 				if ( child.visible || options.onlyVisible === false ) {
 
-					var node = processNode( child );
+					var node = await processNode( child );
 
 					if ( node !== null ) {
 
@@ -1700,7 +1702,7 @@ THREE.GLTFExporter.prototype = {
 		 * Creates a THREE.Scene to hold a list of objects and parse it
 		 * @param  {Array} objects List of objects to process
 		 */
-		function processObjects( objects ) {
+		async function processObjects( objects ) {
 
 			var scene = new THREE.Scene();
 			scene.name = 'AuxScene';
@@ -1713,11 +1715,11 @@ THREE.GLTFExporter.prototype = {
 
 			}
 
-			processScene( scene );
+			await processScene( scene );
 
 		}
 
-		function processInput( input ) {
+		async function processInput( input ) {
 
 			input = input instanceof Array ? input : [ input ];
 
@@ -1727,7 +1729,7 @@ THREE.GLTFExporter.prototype = {
 
 				if ( input[ i ] instanceof THREE.Scene ) {
 
-					processScene( input[ i ] );
+					await processScene( input[ i ] );
 
 				} else {
 
@@ -1739,7 +1741,7 @@ THREE.GLTFExporter.prototype = {
 
 			if ( objectsWithoutScene.length > 0 ) {
 
-				processObjects( objectsWithoutScene );
+				await processObjects( objectsWithoutScene );
 
 			}
 
@@ -1757,7 +1759,7 @@ THREE.GLTFExporter.prototype = {
 
 		}
 
-		processInput( input );
+		await processInput( input );
 
 		Promise.all( pending ).then( function () {
 
