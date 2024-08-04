@@ -18,6 +18,7 @@
 		<button id="loadfilebutton" onclick="allfile.click()" disabled>Load .ALL / .MDL</button>
 		<input id="allfile" type="file" accept=".ALL,.MDL" style="display:none">
 		<button id="loadanmbutton" onclick="anmfile.click()" disabled>Load .ANM</button>
+        <button id="exportbutton" onclick="exportScene()">Export</button>
 		<input id="anmfile" type="file" accept=".ANM" style="display:none">
 		</div>
 		<div>
@@ -38,8 +39,8 @@
 		<script src="FlyControls.js"></script>
 		<script>
             import('./GLTFExporter.js');
-function downloadJSON(objectData) {
-    let filename = "export.gltf";
+function downloadJSON(objectData, filename) {
+    //let filename = "export.gltf";
     let contentType = "application/json;charset=utf-8;";
     if (window.navigator && window.navigator.msSaveOrOpenBlob) {
       var blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(objectData)))], { type: contentType });
@@ -58,6 +59,10 @@ function downloadJSON(objectData) {
 			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
 				urlvars[key] = value;
 			});
+function exportScene() {
+    const exporter = new THREE.GLTFExporter();
+    exporter.parse(scene, function ( gltf ) {console.log(gltf);downloadJSON(gltf, urlvars["file"].replace(".eps", "")+"_"+urlvars["gfxpointer"]+".gltf");}, {embedImages: 1});
+}
 			var games = {
 				"blsc": {"clut": addtopos(0x800E2518), "thumbsp": 0,"newgfxengine": true, "newanmengine": true, "gfxpointerdist": 44, "colpointerdist": 0x34, "colpolysize":22, "getcolpolydata":getcolpolydatats2, "coliniarea": psxetopos(0xb69ec8)},
 				"ts2": {"clut": addtopos(0x800CD200), "thumbsp": 4,"newgfxengine": false, "newanmengine": true, "gfxpointerdist": 108, "colpointerdist": 0x34, "colpolysize":22, "getcolpolydata":getcolpolydatats2, "coliniarea": psxetopos(0xb54bb0)},
