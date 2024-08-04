@@ -7,10 +7,15 @@
 			center {position:absolute;display: table; height: 100%; width: 100%; color: white;}
 			h1 {display: table-cell; vertical-align: middle;}
 			div {position: fixed; margin: 4px; right:0; text-align:right}
+            #buttons {left:0; text-align:left;}
+			button {width: 140px; height: 26px; margin: 4px; background-color: #FFFFFF77; color: black; border: 2px solid #00000077; border-radius: 10px;}
 		</style>
 	</head>
 	<body>
 		<center id="progresscontainer"><h1 id="progress">Loading SaveState file</h1></center>
+<div id="buttons">
+<button id="exportbutton" onclick="exportScene()">Export</button>
+</div>
 		<div style="bottom:0; font-family: monospace; color: white;">
 		W,A,S,D: move<br/>
 		&larr;,&uarr;,&rarr;,&darr;,Q,E: turn<br/>
@@ -19,10 +24,31 @@
 		<script src="three.min.js"></script>
 		<script src="FlyControls.js"></script>
 		<script>
+            import('./GLTFExporter.js');
+function downloadJSON(objectData, filename) {
+    //let filename = "export.gltf";
+    let contentType = "application/json;charset=utf-8;";
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      var blob = new Blob([decodeURIComponent(encodeURI(JSON.stringify(objectData)))], { type: contentType });
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+      var a = document.createElement('a');
+      a.download = filename;
+      a.href = 'data:' + contentType + ',' + encodeURIComponent(JSON.stringify(objectData));
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  }
 			var urlvars = {};
 			var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
 				urlvars[key] = value;
 			});
+function exportScene() {
+    const exporter = new THREE.GLTFExporter();
+    exporter.parse(scene, function ( gltf ) {console.log(gltf);downloadJSON(gltf, urlvars["file"].replace(".eps", "")+"_"+urlvars["gfxpointer"]+".gltf");}, {embedImages: 1});
+}
 			var games = {
 				"blsc": {"clut": addtopos(0x800E2518),"bkgd": 3072, "bkgx": 256, "bkgy": parseInt(urlvars["bkgy"]),"thumbsp": 0, "getgfxo": getgfxots2},
 				"ts2": {"clut": addtopos(0x800CD200),"bkgd": 3072, "bkgx": 192, "bkgy":128,"thumbsp": 4, "getgfxo": getgfxots2},
