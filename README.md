@@ -11,8 +11,7 @@ Travellers Tales videogame company realeased 7 PSX videogames that uses the same
 
 ## How to use
 You can try the online version of the tool [here](https://priceless-pike-6c8ff8.netlify.com/ "here").
-The collision & GFX viewer reads the collision and GFX data from PSX savestates from an emulator (PSXE). These savestates must be uncompressed, and you must uncompress them first by renaming it's extension to **.GZ** and using your favorite tool like 7Zip / WinRAR to uncompress it.
-Anyway, some example savestates are provided.
+The collision & GFX viewer reads the collision and GFX data from PSX savestates from an emulator (ePSXe). Some example savestates are provided, but you can use this tool to load your own. These savestates must be uncompressed; you can decompress them first by changing the extension to **.GZ** and using your favorite tool like 7Zip / WinRAR to decompress it. To find any GFX, you can use the code in [util/findareas.js](util/findareas.js) (load the save state in **gfxva.html** and paste this code into the JS developer console) to find any scenes in memory.
 
 The controls are the following:
 - **WASD**: move
@@ -142,7 +141,7 @@ Engine has support for using PAL8 textures, but it's not used on all games (ex: 
 - **mult**: an optional parameter to set the size multiplier.
 
 - **game**: Game the savestate belongs to.
-- **gfxpointer**: A pointer to the scene element array to be rendered (EPSXE emulator address).
+- **gfxpointer**: A pointer to the scene element array to be rendered (ePSXe emulator address).
 - **gfxcount**: number of scene elements to be rendered.
 - **bkgx**: background vertical size for BL
 - **bkgy**: background vertical size for BL and BLSC
